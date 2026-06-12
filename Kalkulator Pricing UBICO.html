@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<!--
+  Kalkulator Harga UBICO — Single-file HTML/CSS/JS
+  Cara pakai: Buka file ini langsung di browser (Chrome/Firefox/Edge).
+  Tidak perlu server atau instalasi apapun.
+-->
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kalkulator Harga UBICO</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg:          #071B1C;
+  --surface:     #0D2829;
+  --surface2:    #112F30;
+  --surface3:    #163638;
+  --border:      #1E4749;
+  --border-lt:   #265355;
+  --gold:        #C8973A;
+  --gold-lt:     #E0B45A;
+  --gold-dim:    #6B4E18;
+  --gold-glow:   rgba(200,151,58,.12);
+  --teal-lt:     #22A0A0;
+  --green:       #3ABEAA;
+  --red:         #E07070;
+  --text:        #E8F2F2;
+  --text-2:      #9BBDBE;
+  --text-3:      #5C8A8B;
+  --radius:      14px;
+  --radius-sm:   9px;
+  --radius-xs:   6px;
+  --shadow-sm:   0 2px 8px rgba(0,0,0,.25);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse 60% 40% at 10% 0%, rgba(26,122,122,.07) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 90% 100%, rgba(200,151,58,.05) 0%, transparent 60%);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border-lt); border-radius: 3px; }
+
+/* HEADER */
+header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(7,27,28,.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+}
+.header-inner {
+  max-width: 1320px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px; gap: 20px;
+}
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand-name { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--gold-lt); }
+.brand-sub { font-size: 11px; font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-3); }
+.header-margin {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 8px 16px;
+}
+.header-margin label { font-size: 11px; font-weight: 600; letter-spacing: 1.8px; text-transform: uppercase; color: var(--text-3); white-space: nowrap; }
+.header-margin input {
+  width: 72px; background: transparent; border: none; outline: none;
+  color: var(--gold-lt); font-family: 'DM Mono', monospace;
+  font-size: 18px; font-weight: 500; text-align: right; -moz-appearance: textfield;
+}
+.header-margin input::-webkit-inner-spin-button,
+.header-margin input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.header-margin .pct { color: var(--gold); font-size: 16px; font-weight: 600; margin-left: 2px; }
+
+/* LAYOUT */
+.app {
+  max-width: 1320px; margin: 0 auto;
+  padding: 28px 20px 60px;
+  display: grid; grid-template-columns: 1fr 460px;
+  gap: 24px; align-items: start;
+}
+@media (max-width: 960px) { .app { grid-template-columns: 1fr; } .output-col { position: static; } }
+
+/* CARD */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 22px 24px; margin-bottom: 18px;
+  transition: border-color .2s;
+}
+.card:hover { border-color: var(--border-lt); }
+.card-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+}
+.card-title::before {
+  content: ''; display: inline-block; width: 2px; height: 12px;
+  background: linear-gradient(180deg, var(--gold-lt), var(--gold-dim));
+  border-radius: 2px; flex-shrink: 0;
+}
+
+/* PRESET */
+.preset-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.preset-btn {
+  padding: 12px 10px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); cursor: pointer; text-align: center;
+  transition: all .18s; display: flex; flex-direction: column; gap: 4px;
+}
+.preset-btn:hover { border-color: var(--gold); background: var(--gold-glow); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.preset-btn.active { border-color: var(--gold); background: var(--gold-glow); }
+.preset-btn .pname { font-size: 12px; font-weight: 600; color: var(--text); }
+.preset-btn .pdesc { font-size: 10px; color: var(--text-3); line-height: 1.4; }
+.preset-reset {
+  margin-top: 10px; width: 100%; padding: 9px; background: transparent;
+  border: 1px dashed var(--border-lt); border-radius: var(--radius-xs);
+  cursor: pointer; font-size: 12px; color: var(--text-3); font-family: 'DM Sans', sans-serif; transition: all .15s;
+}
+.preset-reset:hover { color: var(--red); border-color: var(--red); }
+
+/* OPTION ITEMS */
+.option-group { display: flex; flex-direction: column; gap: 8px; }
+.opt-item {
+  display: flex; align-items: center;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+  cursor: pointer; transition: border-color .18s, background .18s;
+  gap: 10px; user-select: none;
+}
+.opt-item:hover { border-color: var(--border-lt); }
+.opt-item.selected, .opt-item.checked { border-color: var(--gold); background: rgba(200,151,58,.07); }
+.opt-item input[type=radio], .opt-item input[type=checkbox] { display: none; }
+.opt-marker {
+  width: 17px; height: 17px; flex-shrink: 0; border: 2px solid var(--text-3);
+  transition: all .15s; display: flex; align-items: center; justify-content: center;
+}
+.opt-marker.radio { border-radius: 50%; }
+.opt-marker.check { border-radius: 4px; }
+.opt-item.selected .opt-marker, .opt-item.checked .opt-marker { border-color: var(--gold); background: var(--gold); }
+.opt-marker svg { display: none; }
+.opt-item.selected .opt-marker svg, .opt-item.checked .opt-marker svg { display: block; }
+.opt-label { flex: 1; font-size: 13px; font-weight: 500; color: var(--text); }
+
+/* HPP OVERRIDE INPUT inside opt-item */
+.hpp-field {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-xs); padding: 4px 8px;
+  width: 130px; flex-shrink: 0;
+}
+.hpp-field span { font-size: 11px; color: var(--gold); font-weight: 600; white-space: nowrap; }
+.hpp-field input {
+  width: 100%; background: transparent; border: none; outline: none;
+  color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px;
+  text-align: right; -moz-appearance: textfield;
+}
+.hpp-field input::-webkit-inner-spin-button,
+.hpp-field input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.opt-item.selected .hpp-field,
+.opt-item.checked  .hpp-field { border-color: var(--gold-dim); }
+
+/* MANUAL INPUTS (penalti/ukuran) */
+.manual-group { display: flex; flex-direction: column; gap: 12px; }
+.manual-row { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+.manual-desc { flex: 1; }
+.manual-desc strong { font-size: 13px; font-weight: 600; color: var(--text); display: block; }
+.manual-desc span { font-size: 11px; color: var(--text-3); }
+.rp-input { position: relative; width: 160px; flex-shrink: 0; }
+.rp-input .prefix { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 12px; font-weight: 600; pointer-events: none; }
+.rp-input input {
+  width: 100%; padding: 9px 12px 9px 34px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-xs); color: var(--text);
+  font-family: 'DM Mono', monospace; font-size: 13px;
+  outline: none; transition: border-color .15s; -moz-appearance: textfield;
+}
+.rp-input input::-webkit-inner-spin-button,
+.rp-input input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.rp-input input:focus { border-color: var(--gold); }
+
+/* OUTPUT */
+.output-col { position: sticky; top: 80px; }
+.summary-card {
+  background: var(--surface); border: 1px solid var(--gold-dim);
+  border-radius: var(--radius); overflow: hidden;
+  box-shadow: 0 0 40px rgba(200,151,58,.06); margin-bottom: 18px;
+}
+.summary-card-header {
+  background: linear-gradient(135deg, #122E2E, #0D2829);
+  border-bottom: 1px solid var(--gold-dim); padding: 18px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.summary-title { font-family: 'DM Serif Display', serif; font-size: 14px; color: var(--gold); }
+.margin-badge {
+  font-family: 'DM Mono', monospace; font-size: 12px; color: var(--teal-lt);
+  background: rgba(26,122,122,.15); padding: 3px 10px;
+  border-radius: 20px; border: 1px solid rgba(26,122,122,.3);
+}
+.kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--border); }
+.kpi { padding: 16px; border-right: 1px solid var(--border); }
+.kpi:last-child { border-right: none; }
+.kpi-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-3); margin-bottom: 6px; }
+.kpi-value { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.1; }
+.kpi-value.hpp  { color: var(--text-2); }
+.kpi-value.jual { color: var(--gold-lt); font-size: 16px; }
+.kpi-value.laba { color: var(--green); }
+
+/* BREAKDOWN TABLE */
+.inv-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.inv-table thead tr { border-bottom: 1px solid var(--border); }
+.inv-table th {
+  padding: 9px 14px; font-size: 10px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--text-3);
+  text-align: left; background: var(--surface2);
+}
+.inv-table th.r, .inv-table td.r { text-align: right; }
+.inv-table tbody tr { border-bottom: 1px solid rgba(30,71,73,.5); transition: background .12s; }
+.inv-table tbody tr:hover { background: var(--surface2); }
+.inv-table tbody tr:last-child { border-bottom: none; }
+.inv-table td { padding: 9px 14px; vertical-align: middle; }
+.inv-table td:first-child { color: var(--text); font-weight: 500; }
+
+/* Editable HPP cell in table */
+.cell-hpp {
+  font-family: 'DM Mono', monospace; color: var(--text-2);
+  display: flex; align-items: center; justify-content: flex-end; gap: 4px;
+}
+.cell-hpp input {
+  width: 90px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-xs); color: var(--text-2);
+  font-family: 'DM Mono', monospace; font-size: 12px;
+  padding: 3px 8px; text-align: right; outline: none;
+  transition: border-color .15s; -moz-appearance: textfield;
+}
+.cell-hpp input::-webkit-inner-spin-button,
+.cell-hpp input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.cell-hpp input:focus { border-color: var(--gold); color: var(--text); }
+
+/* Editable sell cell in table */
+.cell-jual {
+  font-family: 'DM Mono', monospace; color: var(--gold-lt); font-weight: 500;
+  display: flex; align-items: center; justify-content: flex-end; gap: 4px;
+}
+.cell-jual input {
+  width: 90px; background: var(--surface); border: 1px solid var(--gold-dim);
+  border-radius: var(--radius-xs); color: var(--gold-lt);
+  font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500;
+  padding: 3px 8px; text-align: right; outline: none;
+  transition: border-color .15s; -moz-appearance: textfield;
+}
+.cell-jual input::-webkit-inner-spin-button,
+.cell-jual input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.cell-jual input:focus { border-color: var(--gold); }
+.cell-jual .auto-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); flex-shrink: 0; }
+.cell-jual .manual-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+
+.inv-table tfoot tr { background: var(--surface2); border-top: 2px solid var(--gold-dim); }
+.inv-table tfoot td { padding: 13px 14px; font-weight: 700; }
+.inv-table tfoot td:first-child { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-2); }
+.inv-table tfoot td.r { font-family: 'DM Mono', monospace; }
+.inv-table tfoot td.foot-hpp { color: var(--text); font-size: 13px; }
+.inv-table tfoot td.foot-jual { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--gold); }
+
+.empty-state { padding: 32px 14px; text-align: center; color: var(--text-3); font-size: 13px; }
+.profit-band {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 18px;
+  background: linear-gradient(90deg, rgba(58,190,170,.08), transparent);
+  border-top: 1px solid var(--border);
+}
+.profit-band-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-3); }
+.profit-band-val { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; color: var(--green); }
+.note { font-size: 11px; color: var(--text-3); line-height: 1.6; padding: 12px 18px; border-top: 1px solid var(--border); }
+.note strong { color: var(--text-2); }
+.reset-overrides {
+  margin: 0 18px 14px; padding: 7px; width: calc(100% - 36px);
+  background: transparent; border: 1px dashed var(--border-lt);
+  border-radius: var(--radius-xs); cursor: pointer;
+  font-size: 11px; color: var(--text-3); font-family: 'DM Sans', sans-serif; transition: all .15s;
+}
+.reset-overrides:hover { color: var(--red); border-color: var(--red); }
+
+@media (max-width: 560px) {
+  .app { padding: 14px 12px 48px; }
+  .card { padding: 16px; }
+  .header-inner { height: auto; padding: 12px 0; flex-wrap: wrap; }
+  header { padding: 0 16px; }
+  .kpi-row { grid-template-columns: 1fr; }
+  .kpi { border-right: none; border-bottom: 1px solid var(--border); }
+  .preset-grid { grid-template-columns: 1fr; }
+  .manual-row { flex-direction: column; align-items: flex-start; }
+  .rp-input { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-name">Kalkulator Harga UBICO</span>
+      <span class="brand-sub">Konveksi Pricing Tool</span>
+    </div>
+    <div class="header-margin">
+      <label for="globalMarkup">Target Markup</label>
+      <input type="number" id="globalMarkup" min="0" max="500" step="0.5" value="27.5" oninput="onMarkupChange()" />
+      <span class="pct">%</span>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- KOLOM KIRI -->
+  <div class="input-col">
+
+    <!-- PRESET -->
+    <div class="card">
+      <div class="card-title">Preset Bundling</div>
+      <div class="preset-grid">
+        <button class="preset-btn" id="preset-basic" onclick="applyPreset('basic')">
+          <span class="pname">Basic</span>
+          <span class="pdesc">American Drill + Lanyard</span>
+        </button>
+        <button class="preset-btn" id="preset-marmer" onclick="applyPreset('marmer')">
+          <span class="pname">Komplit — Marmer</span>
+          <span class="pdesc">Drill + Lanyard + Box + Vandel Marmer</span>
+        </button>
+        <button class="preset-btn" id="preset-akrilik" onclick="applyPreset('akrilik')">
+          <span class="pname">Komplit — Akrilik</span>
+          <span class="pdesc">Drill + Lanyard + Box + Vandel Akrilik</span>
+        </button>
+      </div>
+      <button class="preset-reset" onclick="resetAll()">✕ Reset semua pilihan</button>
+    </div>
+
+    <!-- KATEGORI 1: BAHAN VEST -->
+    <div class="card">
+      <div class="card-title">Kategori 1 — Bahan Vest</div>
+      <div class="option-group" id="bahanGroup">
+        <label class="opt-item">
+          <input type="radio" name="bahan" value="105000" />
+          <span class="opt-marker radio"><svg width="6" height="6" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" fill="#071B1C"/></svg></span>
+          <span class="opt-label">American Drill</span>
+          <div class="hpp-field" onclick="event.stopPropagation()">
+            <span>Rp</span>
+            <input type="number" class="hpp-override" data-key="bahan-american" placeholder="105000" oninput="calculate()" />
+          </div>
+        </label>
+        <label class="opt-item">
+          <input type="radio" name="bahan" value="115000" />
+          <span class="opt-marker radio"><svg width="6" height="6" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" fill="#071B1C"/></svg></span>
+          <span class="opt-label">Castillo</span>
+          <div class="hpp-field" onclick="event.stopPropagation()">
+            <span>Rp</span>
+            <input type="number" class="hpp-override" data-key="bahan-castillo" placeholder="115000" oninput="calculate()" />
+          </div>
+        </label>
+        <label class="opt-item">
+          <input type="radio" name="bahan" value="125000" />
+          <span class="opt-marker radio"><svg width="6" height="6" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" fill="#071B1C"/></svg></span>
+          <span class="opt-label">Nagata</span>
+          <div class="hpp-field" onclick="event.stopPropagation()">
+            <span>Rp</span>
+            <input type="number" class="hpp-override" data-key="bahan-nagata" placeholder="125000" oninput="calculate()" />
+          </div>
+        </label>
+        <label class="opt-item">
+          <input type="radio" name="bahan" value="135000" />
+          <span class="opt-marker radio"><svg width="6" height="6" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" fill="#071B1C"/></svg></span>
+          <span class="opt-label">Ribstok</span>
+          <div class="hpp-field" onclick="event.stopPropagation()">
+            <span>Rp</span>
+            <input type="number" class="hpp-override" data-key="bahan-ribstok" placeholder="135000" oninput="calculate()" />
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- KATEGORI 2: ATRIBUT & VANDEL -->
+    <div class="card">
+      <div class="card-title">Kategori 2 — Atribut & Vandel</div>
+      <div class="option-group" id="atributGroup">
+        <label class="opt-item">
+          <input type="checkbox" data-key="lanyard" value="9000" />
+          <span class="opt-marker check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#071B1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="opt-label">Lanyard & ID Card</span>
+          <div class="hpp-field" onclick="event.stopPropagation()">
+            <span>Rp</span>
+            <input type="number" class="hpp-override" data-key="lanyard" placeholder="9000" oninput="calculate()" />
+          </div>
+        </label>
+        <label class="opt-item">
+          <input type="checkbox" data-key="boxbludru" value="35000" data-sell="50000" />
+          <span class="opt-marker check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#071B1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="opt-label">Box Bludru</span>
+          <div class="hpp-field" onclick="event.stopPropagation()">
+            <span>Rp</span>
+            <input type="number" class="hpp-override" data-key="boxbludru" placeholder="35000" oninput="calculate()" />
+          </div>
+        </label>
+        <label class="opt-item">
+          <input type="checkbox" data-key="vandelmarmer" value="30000" data-sell="50000" />
+          <span class="opt-marker check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#071B1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="opt-label">Vandel Marmer</span>
+          <div class="hpp-field" onclick="event.stopPropagation()">
+            <span>Rp</span>
+            <input type="number" class="hpp-override" data-key="vandelmarmer" placeholder="30000" oninput="calculate()" />
+          </div>
+        </label>
+        <label class="opt-item">
+          <input type="checkbox" data-key="vandelakrilik" value="40000" data-sell="60000" />
+          <span class="opt-marker check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#071B1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="opt-label">Vandel Akrilik</span>
+          <div class="hpp-field" onclick="event.stopPropagation()">
+            <span>Rp</span>
+            <input type="number" class="hpp-override" data-key="vandelakrilik" placeholder="40000" oninput="calculate()" />
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- KATEGORI 3: FITUR TAMBAHAN -->
+    <div class="card">
+      <div class="card-title">Kategori 3 — Fitur Tambahan</div>
+      <div class="option-group" id="fiturGroup">
+        <label class="opt-item">
+          <input type="checkbox" data-key="bordir" value="5000" />
+          <span class="opt-marker check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#071B1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="opt-label">Tambah Bordir</span>
+          <div class="hpp-field" onclick="event.stopPropagation()">
+            <span>Rp</span>
+            <input type="number" class="hpp-override" data-key="bordir" placeholder="5000" oninput="calculate()" />
+          </div>
+        </label>
+        <label class="opt-item">
+          <input type="checkbox" data-key="warna" value="5000" />
+          <span class="opt-marker check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#071B1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="opt-label">Kombinasi Warna</span>
+          <div class="hpp-field" onclick="event.stopPropagation()">
+            <span>Rp</span>
+            <input type="number" class="hpp-override" data-key="warna" placeholder="5000" oninput="calculate()" />
+          </div>
+        </label>
+        <label class="opt-item">
+          <input type="checkbox" data-key="furing" value="5000" />
+          <span class="opt-marker check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#071B1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="opt-label">Tambah Furing</span>
+          <div class="hpp-field" onclick="event.stopPropagation()">
+            <span>Rp</span>
+            <input type="number" class="hpp-override" data-key="furing" placeholder="5000" oninput="calculate()" />
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- KATEGORI 4: PENALTI -->
+    <div class="card">
+      <div class="card-title">Kategori 4 — Biaya Eksklusif & Penalti</div>
+      <div class="manual-group">
+        <div class="manual-row">
+          <div class="manual-desc">
+            <strong>Biaya Ukuran &gt; XL</strong>
+            <span>Rp 5.000 per kelipatan — input total rupiahnya</span>
+          </div>
+          <div class="rp-input">
+            <span class="prefix">Rp</span>
+            <input type="number" id="biayaUkuran" min="0" step="5000" placeholder="0" oninput="calculate()" />
+          </div>
+        </div>
+        <div class="manual-row">
+          <div class="manual-desc">
+            <strong>Order &lt; 12 pcs</strong>
+            <span>Rp 10.000/pcs — input total rupiahnya</span>
+          </div>
+          <div class="rp-input">
+            <span class="prefix">Rp</span>
+            <input type="number" id="biayaPenalti" min="0" step="10000" placeholder="0" oninput="calculate()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /input-col -->
+
+  <!-- KOLOM KANAN -->
+  <div class="output-col">
+    <div class="summary-card">
+
+      <div class="summary-card-header">
+        <span class="summary-title">Invoice Kalkulasi</span>
+        <span class="margin-badge" id="markupBadge">Markup 27.5%</span>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-label">Total HPP</div>
+          <div class="kpi-value hpp" id="kpiHPP">Rp 0</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Harga Jual</div>
+          <div class="kpi-value jual" id="kpiJual">Rp 0</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Profit</div>
+          <div class="kpi-value laba" id="kpiLaba">Rp 0</div>
+        </div>
+      </div>
+
+      <table class="inv-table">
+        <thead>
+          <tr>
+            <th>Nama Item</th>
+            <th class="r">HPP Satuan</th>
+            <th class="r">Harga Jual</th>
+          </tr>
+        </thead>
+        <tbody id="breakdownBody">
+          <tr><td colspan="3" class="empty-state">Pilih komponen untuk mulai kalkulasi</td></tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>Grand Total</td>
+            <td class="r foot-hpp" id="footHPP">—</td>
+            <td class="r foot-jual" id="footJual">—</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <button class="reset-overrides" onclick="resetJualOverrides()">↺ Reset semua harga jual ke otomatis</button>
+
+      <div class="profit-band">
+        <span class="profit-band-label">Total Profit (Laba Kotor)</span>
+        <span class="profit-band-val" id="profitBand">Rp 0</span>
+      </div>
+
+      <div class="note">
+        <strong>HPP</strong> bisa diubah langsung di input kiri tiap item.
+        <strong>Harga Jual</strong> auto dari markup, klik angkanya di tabel untuk override manual.
+        Titik <span style="color:var(--gold);">●</span> = manual, <span style="color:var(--text-3);">●</span> = otomatis.
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────────────
+
+// jualOverrides: { lineKey: number } — harga jual yang sudah diubah manual
+const jualOverrides = {};
+
+// ─────────────────────────────────────────────────────
+//  UTILITIES
+// ─────────────────────────────────────────────────────
+
+const fmt = n => 'Rp\u00A0' + Math.round(n).toLocaleString('id-ID');
+
+// Markup: HPP × (1 + markup/100), bulatkan ke atas ke ratusan terdekat
+function applyMarkup(hpp, markupPct) {
+  const raw = hpp * (1 + markupPct / 100);
+  return Math.ceil(raw / 100) * 100;
+}
+
+// Baca HPP aktual: override input jika ada isinya, fallback ke default value
+function readHpp(key, defaultVal) {
+  const inp = document.querySelector(`.hpp-override[data-key="${key}"]`);
+  if (inp && inp.value !== '') return parseInt(inp.value) || 0;
+  return defaultVal;
+}
+
+// ─────────────────────────────────────────────────────
+//  CLICK HANDLER — semua opt-item pakai satu delegasi
+// ─────────────────────────────────────────────────────
+document.addEventListener('click', function(e) {
+  const item = e.target.closest('.opt-item');
+  if (!item) return;
+  // jangan trigger kalau klik di dalam hpp-field
+  if (e.target.closest('.hpp-field')) return;
+
+  const radio = item.querySelector('input[type=radio]');
+  const check = item.querySelector('input[type=checkbox]');
+
+  if (radio) {
+    e.preventDefault();
+    document.querySelectorAll('#bahanGroup .opt-item').forEach(r => r.classList.remove('selected'));
+    radio.checked = true;
+    item.classList.add('selected');
+    calculate();
+  } else if (check) {
+    e.preventDefault();
+    check.checked = !check.checked;
+    item.classList.toggle('checked', check.checked);
+    calculate();
+  }
+});
+
+// ─────────────────────────────────────────────────────
+//  PRESET / RESET
+// ─────────────────────────────────────────────────────
+const ALL_CHECKS = ['lanyard','boxbludru','vandelmarmer','vandelakrilik','bordir','warna','furing'];
+
+function setCheck(key, state) {
+  const cb = document.querySelector(`input[data-key="${key}"]`);
+  if (!cb) return;
+  cb.checked = state;
+  cb.closest('.opt-item').classList.toggle('checked', state);
+}
+
+function setBahan(val) {
+  document.querySelectorAll('#bahanGroup .opt-item').forEach(r => {
+    const inp = r.querySelector('input[type=radio]');
+    const match = parseInt(inp.value) === val;
+    inp.checked = match;
+    r.classList.toggle('selected', match);
+  });
+}
+
+const PRESETS = {
+  basic:   { bahan: 105000, checks: ['lanyard'] },
+  marmer:  { bahan: 105000, checks: ['lanyard','boxbludru','vandelmarmer'] },
+  akrilik: { bahan: 105000, checks: ['lanyard','boxbludru','vandelakrilik'] },
+};
+
+function applyPreset(name) {
+  ALL_CHECKS.forEach(k => setCheck(k, false));
+  setBahan(PRESETS[name].bahan);
+  PRESETS[name].checks.forEach(k => setCheck(k, true));
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('preset-' + name).classList.add('active');
+  calculate();
+}
+
+function resetAll() {
+  document.querySelectorAll('#bahanGroup .opt-item').forEach(r => {
+    r.classList.remove('selected');
+    r.querySelector('input[type=radio]').checked = false;
+  });
+  ALL_CHECKS.forEach(k => setCheck(k, false));
+  document.getElementById('biayaUkuran').value  = '';
+  document.getElementById('biayaPenalti').value = '';
+  document.querySelectorAll('.hpp-override').forEach(i => i.value = '');
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  resetJualOverrides();
+}
+
+// ─────────────────────────────────────────────────────
+//  HARGA JUAL OVERRIDE (dari tabel)
+// ─────────────────────────────────────────────────────
+function setJualOverride(key, val) {
+  const n = parseInt(val);
+  if (!isNaN(n) && n > 0) {
+    jualOverrides[key] = n;
+  } else {
+    delete jualOverrides[key];
+  }
+  updateTotals();
+}
+
+function resetJualOverrides() {
+  Object.keys(jualOverrides).forEach(k => delete jualOverrides[k]);
+  calculate();
+}
+
+function onMarkupChange() {
+  // saat markup berubah, clear semua jual override supaya ikut recalc
+  resetJualOverrides();
+}
+
+// ─────────────────────────────────────────────────────
+//  READ STATE
+// ─────────────────────────────────────────────────────
+function buildLines() {
+  const lines = [];
+  const markup = parseFloat(document.getElementById('globalMarkup').value) || 0;
+
+  // Bahan
+  const bahanInput = document.querySelector('#bahanGroup input[type=radio]:checked');
+  if (bahanInput) {
+    const defaultHpp = parseInt(bahanInput.value);
+    const bahanName  = bahanInput.closest('.opt-item').querySelector('.opt-label').textContent.trim();
+    // key untuk hpp override: pakai data-key di input hpp
+    const hppInp = bahanInput.closest('.opt-item').querySelector('.hpp-override');
+    const hpp = (hppInp && hppInp.value !== '') ? (parseInt(hppInp.value) || 0) : defaultHpp;
+    const lineKey = 'bahan-' + bahanName.toLowerCase().replace(/\s+/g,'-');
+    const sellFixed = null; // bahan ikut markup
+    lines.push({ key: lineKey, label: 'Bahan Vest — ' + bahanName, hpp, sellFixed });
+  }
+
+  // Checkboxes
+  document.querySelectorAll('.opt-item.checked input[type=checkbox]').forEach(cb => {
+    const key   = cb.getAttribute('data-key');
+    const defaultHpp = parseInt(cb.value);
+    const label = cb.closest('.opt-item').querySelector('.opt-label').textContent.trim();
+    const hppInp = cb.closest('.opt-item').querySelector('.hpp-override');
+    const hpp = (hppInp && hppInp.value !== '') ? (parseInt(hppInp.value) || 0) : defaultHpp;
+    const sellFixed = cb.hasAttribute('data-sell') ? parseInt(cb.getAttribute('data-sell')) : null;
+    lines.push({ key, label, hpp, sellFixed });
+  });
+
+  // Penalti manual
+  const ukuran  = parseInt(document.getElementById('biayaUkuran').value)  || 0;
+  const penalti = parseInt(document.getElementById('biayaPenalti').value) || 0;
+  if (ukuran  > 0) lines.push({ key: 'ukuran',  label: 'Biaya Ukuran > XL',      hpp: ukuran,  sellFixed: null });
+  if (penalti > 0) lines.push({ key: 'penalti', label: 'Penalti Order < 12 pcs', hpp: penalti, sellFixed: null });
+
+  return { lines, markup };
+}
+
+// ─────────────────────────────────────────────────────
+//  CALCULATE & RENDER
+// ─────────────────────────────────────────────────────
+function calculate() {
+  const { lines, markup } = buildLines();
+
+  document.getElementById('markupBadge').textContent = `Markup ${markup}%`;
+
+  const tbody    = document.getElementById('breakdownBody');
+  const footHPP  = document.getElementById('footHPP');
+  const footJual = document.getElementById('footJual');
+
+  if (lines.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" class="empty-state">Pilih komponen untuk mulai kalkulasi</td></tr>`;
+    footHPP.textContent  = '—';
+    footJual.textContent = '—';
+    document.getElementById('kpiHPP').textContent    = 'Rp 0';
+    document.getElementById('kpiJual').textContent   = 'Rp 0';
+    document.getElementById('kpiLaba').textContent   = 'Rp 0';
+    document.getElementById('profitBand').textContent = 'Rp 0';
+    return;
+  }
+
+  tbody.innerHTML = lines.map(l => {
+    // HPP cell — tampilkan saja, sudah bisa diedit di kiri
+    const hppCell = `<div class="cell-hpp">${fmt(l.hpp)}</div>`;
+
+    // Harga Jual: sellFixed > jualOverride > markup
+    const autoJual = l.sellFixed !== null ? l.sellFixed : applyMarkup(l.hpp, markup);
+    const isManual = jualOverrides[l.key] !== undefined;
+    const jual     = isManual ? jualOverrides[l.key] : autoJual;
+    const dot      = isManual
+      ? `<span class="manual-dot" title="Manual override"></span>`
+      : `<span class="auto-dot"   title="Otomatis dari markup"></span>`;
+
+    const jualCell = `
+      <div class="cell-jual">
+        ${dot}
+        <input type="number"
+          value="${jual}"
+          oninput="setJualOverride('${l.key}', this.value)"
+          onclick="this.select()"
+          title="Edit harga jual manual"
+        />
+      </div>`;
+
+    return `<tr>
+      <td>${l.label}</td>
+      <td class="r">${hppCell}</td>
+      <td class="r">${jualCell}</td>
+    </tr>`;
+  }).join('');
+
+  updateTotals();
+}
+
+function updateTotals() {
+  const { lines, markup } = buildLines();
+  if (lines.length === 0) return;
+
+  let totalHPP  = 0;
+  let totalJual = 0;
+
+  lines.forEach(l => {
+    totalHPP += l.hpp;
+    const autoJual = l.sellFixed !== null ? l.sellFixed : applyMarkup(l.hpp, markup);
+    totalJual += jualOverrides[l.key] !== undefined ? jualOverrides[l.key] : autoJual;
+  });
+
+  const totalLaba = totalJual - totalHPP;
+
+  document.getElementById('kpiHPP').textContent    = fmt(totalHPP);
+  document.getElementById('kpiJual').textContent   = fmt(totalJual);
+  document.getElementById('kpiLaba').textContent   = fmt(totalLaba);
+  document.getElementById('profitBand').textContent = fmt(totalLaba);
+  document.getElementById('footHPP').textContent   = fmt(totalHPP);
+  document.getElementById('footJual').textContent  = fmt(totalJual);
+}
+
+// ─────────────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', calculate);
+</script>
+</body>
+</html>
